@@ -2,6 +2,7 @@
 
 
 {% block detail %}
+<a href="{% url 'the-main-page' %}"><h4>Return</h4></a>
 <h1>{{ book.title }}</h1>
 <h2>{{ book.date }}</h2>
 <h3>{{ book.text }}</h3>
@@ -25,6 +26,19 @@
     <a href="{% url 'add-like-to-comment' id=comment.id slug=book.slug %}">
         <h4>Likes: {{ comment.count_like }}</h4>
     </a>
+    {% if comment.is_owner %}
+    <a href="{% url 'delete-comment' id=comment.id %}">
+        <i><input class="btn-danger" type="button" value="Delete Comment"></i>
+    </a>
+    <a href="{% url 'update-comment' id=comment.id %}">
+        <i><input class="btn-light" type="button" value="Update Comment"></i>
+    </a>
+    {% endif %}
+    {% if comment.is_liked %}
+        <span class="fa fa-star checked"></span>
+    {% endif %}
+    <h5>{{ comment.users_like.all }}</h5>
+
 {% endfor %}
 
 {% if user.is_authenticated %}

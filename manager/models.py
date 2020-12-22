@@ -20,18 +20,18 @@ class Book(models.Model):
     count_rated_users = models.PositiveIntegerField(default=0)
     count_all_stars = models.PositiveIntegerField(default=0)
     users_like = models.ManyToManyField(User, through="manager.LikeBookUser", related_name="liked_books")
-    slug = models.SlugField(null=True, unique=True, db_index=True)
+    slug = models.SlugField(primary_key=True)
 
     def __str__(self):
-        return f"{self.title}-{self.id}"
+        return f"{self.title}-{self.slug}"
 
     def save(self, **kwargs):
-        if self.id is None:
+        if self.slug == "":
             self.slug = slugify(self.title)
         try:
             super().save(**kwargs)
         except:
-            self.slug += str(self.id)
+            self.slug += str(self.date)
             super().save(**kwargs)
 
 
@@ -40,9 +40,9 @@ class LikeBookUser(models.Model):
         unique_together = ("user", "book")
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="liked_book_table")
-    book: Book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="liked_user_table")
     rate = models.PositiveIntegerField(default=5)
-
+    book = models.ForeignKey(
+        Book, null=True, on_delete=models.CASCADE, related_name="liked_user_table")
     def save(self, **kwargs):
         try:
             super().save(**kwargs)
@@ -61,13 +61,13 @@ class LikeBookUser(models.Model):
 class Comment(models.Model):
     text = models.TextField()
     date = models.DateTimeField(auto_now_add=True)
-    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="comments")
     author = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     users_like = models.ManyToManyField(
         User,
         through="manager.LikeCommentUser",
         related_name="liked_comment"
     )
+    book = models.ForeignKey(Book, null=True, on_delete=models.CASCADE, related_name= "comments")
 
 
 class LikeCommentUser(models.Model):
@@ -82,4 +82,5 @@ class LikeCommentUser(models.Model):
             super().save(**kwargs)
         except:
             LikeCommentUser.objects.get(user=self.user, comment=self.comment).delete()
+
 

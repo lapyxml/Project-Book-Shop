@@ -21,7 +21,15 @@
                 </a>
             {% endif %}
         {% endfor %}
-
+        <h5>{{ b.users_like.all }}</h5>
+        {% if b.is_owner %}
+            <a href="{% url 'delete-book' slug=b.slug %}">
+                <i><input class="btn-danger" type="button" value="Delete Book"></i>
+            </a>
+            <a href="{% url 'update-book' slug=b.slug %}">
+                <i><input class="btn-light" type="button" value="Update Book"></i>
+            </a>
+        {% endif %}
         <br>
     {% endfor %}
 
