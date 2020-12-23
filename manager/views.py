@@ -1,11 +1,12 @@
 from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
-from django.db.models import Count, Prefetch, OuterRef, Exists
+from django.contrib import messages
+from django.db.models import Prefetch, OuterRef, Exists
 from django.shortcuts import render, redirect
 from django.views import View
 from django.contrib.auth.forms import AuthenticationForm
 
-from manager.forms import BookForm, CommentForm
+from manager.forms import BookForm, CommentForm, CustomUserCreationForm
 from manager.models import Book, Comment, LikeCommentUser
 from manager.models import LikeBookUser as RateBookUser
 
@@ -32,7 +33,24 @@ class LoginView(View):
         user = AuthenticationForm(data=request.POST)
         if user.is_valid():
             login(request, user.get_user())
-        return redirect("the-main-page")
+            return redirect("the-main-page")
+        messages.error(request, user.error_messages)
+        return redirect('login')
+
+
+class RegisterView(View):
+    def get(self, request):
+        form = CustomUserCreationForm
+        return render(request, "register.html", {"form": form})
+
+    def post(self, request):
+        form = CustomUserCreationForm(data=request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("login")
+        messages.error(request, form.error_messages)
+        return redirect("register")
+
 
 def logout_user(request):
     logout(request)
@@ -57,7 +75,7 @@ class AddRate2Book(View):
 class BookDetail(View):
     def get(self, request, slug):
         context = {}
-        comment_query = Comment.objects.annotate(count_like=Count("users_like")).select_related("author")
+        comment_query = Comment.objects.select_related("author")
         if request.user.is_authenticated:
             is_owner = Exists(User.objects.filter(comment=OuterRef('pk'), id=request.user.id))
             is_liked = Exists(User.objects.filter(liked_comment=OuterRef('pk'), id=request.user.id))
