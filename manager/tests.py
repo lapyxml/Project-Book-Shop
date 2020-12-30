@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 from slugify import slugify
 
-from manager.models import Book
+from manager.models import Book, Comment
 
 
 class TestMyAppPlease(TestCase):
@@ -83,13 +83,6 @@ class TestMyAppPlease(TestCase):
         self.client.get(url)
         self.book1.refresh_from_db()
         self.assertEqual(self.book1.rate, 4)
-        # #first user
-        # url = reverse("add-rate", kwargs=dict(slug=self.book1.slug, rate=5))
-        # self.client.force_login(self.user)
-        # self.client.get(url)
-        # self.book1.refresh_from_db()
-        # self.assertNotEqual(self.book1.rate, 4)
-        #
 
 
     def test_delete_book(self):
@@ -108,3 +101,101 @@ class TestMyAppPlease(TestCase):
         self.client.logout()
         self.client.get(url)
         self.assertEqual(Book.objects.count(), 1)
+
+
+    def add_comment(self):
+        self.client.force_login(self.user)
+        self.book = Book.objects.create(title="test_title")
+        url = reverse("add-comment", kwargs=dict(slug=self.book.slug))
+        data = {
+            'text': "test text"
+        }
+        responce = self.client.get(url)
+        self.assertEqual(responce.status_code, 200, msg="is not redirected")
+        responce = self.client.post(url, data)
+        self.assertEqual(responce.status_code, 302, msg="is not redirected")
+        self.assertEqual(Comment.objects.count(), 1)
+        self.assertEqual(Comment.objects.first().text, data=['text'])
+        self.assertEqual(Comment.objects.first().author, data=self.user)
+        self.client.logout()
+        responce = self.client.post(url, data)
+        self.assertEqual(responce.status_code, 302, msg="is not redirected")
+        self.assertEqual(Comment.objects.count(), 1)
+
+
+    def test_comment_update(self):
+        self.client.force_login(self.user)
+        self.book = Book.objects.create(title="test_title")
+        url = reverse("add-comment", kwargs=dict(slug=self.book.slug))
+        data = {
+            'text': "test text"
+        }
+        self.client.get(url)
+        self.client.post(url, data)
+        comment = Comment.objects.first()
+        url = reverse("update-comment", kwargs=dict(id=comment.id))
+        responce = self.client.get(url)
+        self.assertEqual(responce.status_code, 200, msg="is redirected")
+        data = {
+            'text': "test new text"
+        }
+        responce = self.client.post(url, data)
+        self.assertEqual(responce.status_code, 302, msg="is not redirected")
+        self.assertEqual(Comment.objects.count(), 1)
+        Comment.objects.first().refresh_from_db()
+        self.assertEqual(Comment.objects.first().text, "test new text")
+        self.client.logout()
+        data = {
+            'text': "test_new_text"
+        }
+        responce = self.client.post(url, data)
+        self.assertEqual(responce.status_code, 302, msg="is not redirected")
+        self.assertEqual(Comment.objects.count(), 1)
+        Comment.objects.first().refresh_from_db()
+        self.assertEqual(Comment.objects.first().text, "test new text")
+        self.client.force_login(self.user1)
+        responce = self.client.post(url, data)
+        self.assertEqual(responce.status_code, 302, msg="is not redirected")
+        self.assertEqual(Comment.objects.count(), 1)
+        Comment.objects.first().refresh_from_db()
+        self.assertEqual(Comment.objects.first().text, "test new text")
+
+
+    def delete_comment(self):
+        self.client.force_login(self.user)
+        self.book = Book.objects.create(title="test_title")
+        url = reverse("add-comment", kwargs=dict(slug=self.book.slug))
+        data = {
+            'text': "test text"
+        }
+        self.client.get(url)
+        self.client.post(url, data)
+        comment = Comment.objects.first()
+        self.client.logout()
+        url = reverse("delete_comment", kwargs=dict(id=comment.id))
+        responce = self.client.get(url)
+        self.assertEqual(responce.status_code, 200, msg="is not redirected")
+        self.assertEqual(Comment.objects.count(), 1)
+        self.client.force_login(self.user1)
+        responce = self.client.get(url)
+        self.assertEqual(responce.status_code, 200, msg="is not redirected")
+        self.assertEqual(Comment.objects.count(), 1)
+        self.client.logout()
+        self.client.force_login(self.user)
+        responce = self.client.get(url)
+        self.assertEqual(responce.status_code, 200, msg="is not redirected")
+        self.assertEqual(Comment.objects.count(), 0)
+
+
+
+
+
+
+
+
+
+
+
+
+
+

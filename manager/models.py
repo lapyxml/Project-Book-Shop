@@ -3,6 +3,13 @@ from django.db import models
 from slugify import slugify
 
 
+class Genre(models.Model):
+    text = models.TextField(db_index=True)
+
+
+    def __str__(self):
+        return self.text
+
 class Book(models.Model):
     class Meta:
         verbose_name = "Книга"
@@ -21,6 +28,8 @@ class Book(models.Model):
     count_all_stars = models.PositiveIntegerField(default=0)
     users_like = models.ManyToManyField(User, through="manager.LikeBookUser", related_name="liked_books")
     slug = models.SlugField(primary_key=True)
+    genre = models.ManyToManyField(Genre, null=True, blank=True, related_name="genre_book")
+    book_image = models.ImageField(upload_to="manager/", null=True, blank=True)
 
     def __str__(self):
         return f"{self.title}-{self.slug}"
@@ -87,5 +96,4 @@ class LikeCommentUser(models.Model):
         else:
             self.comment.likes += 1
         self.comment.save()
-
 

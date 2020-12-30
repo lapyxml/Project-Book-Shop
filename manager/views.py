@@ -7,7 +7,7 @@ from django.views import View
 from django.contrib.auth.forms import AuthenticationForm
 
 from manager.forms import BookForm, CommentForm, CustomUserCreationForm
-from manager.models import Book, Comment, LikeCommentUser
+from manager.models import Book, Comment, LikeCommentUser, Genre
 from manager.models import LikeBookUser as RateBookUser
 
 
@@ -15,13 +15,16 @@ from manager.models import LikeBookUser as RateBookUser
 class MyPage(View):
     def get(self, request):
         context = {}
-        books = Book.objects.prefetch_related("authors")
+        books = Book.objects.prefetch_related("authors", "genre")
+        gen = Genre.objects.all()
         if request.user.is_authenticated:
             is_owner = Exists(User.objects.filter(books=OuterRef('pk'), id=request.user.id))
             books = books.annotate(is_owner=is_owner)
         context['books'] = books.order_by("-rate", "date")
         context['range'] = range(1, 6)
         context['form'] = BookForm()
+        context['gen'] = gen
+
         return render(request, "index.html", context)
 
 
@@ -91,7 +94,7 @@ class BookDetail(View):
 class AddBook(View):
     def post(self, request):
         if request.user.is_authenticated:
-            bf = BookForm(data=request.POST)
+            bf = BookForm(data=request.POST, files=request.FILES)
             book = bf.save(commit=True)
             book.authors.add(request.user)
             book.save()
@@ -131,7 +134,7 @@ class UpdateBook(View):
         if request.user.is_authenticated:
             book = Book.objects.get(slug=slug)
             if request.user in book.authors.all():
-                bf = BookForm(instance=book, data=request.POST)
+                bf = BookForm(instance=book, data=request.POST, files=request.FILES)
                 if bf.is_valid():
                     bf.save(commit=True)
         return redirect("the-main-page")
@@ -139,16 +142,16 @@ class UpdateBook(View):
 
 class UpdateComment(View):
     def get(self, request, id):
+        comment = Comment.objects.get(id=id)
         if request.user.is_authenticated:
-            comment = Comment.objects.get(id=id)
             if request.user == comment.author:
                 form = CommentForm(instance=comment)
                 return render(request, "update_comment.html", {"form": form, "id":id})
         return redirect("book-detail", slug=comment.book.slug)
 
     def post(self, request, id):
+        comment = Comment.objects.get(id=id)
         if request.user.is_authenticated:
-            comment = Comment.objects.get(id=id)
             if request.user == comment.author:
                 cf = CommentForm(instance=comment, data=request.POST)
                 if cf.is_valid():
@@ -162,3 +165,19 @@ def comment_delete(request, id):
         if request.user == comment.author:
             comment.delete()
     return redirect("book-detail", slug=comment.book.slug)
+
+
+class PageGenre(View):
+    def get(self, request, genre):
+        books = Book.objects.filter(genre__text=genre)
+        context = {}
+        books = books.prefetch_related("authors", "genre")
+        gen = Genre.objects.all()
+        if request.user.is_authenticated:
+            is_owner = Exists(User.objects.filter(books=OuterRef('pk'), id=request.user.id))
+            books = books.annotate(is_owner=is_owner)
+        context['books'] = books.order_by('date')
+        context['range'] = range(1, 6)
+        context['form'] = BookForm
+        context['gen'] = gen
+        return render(request, "page_books_genre.html", context)

@@ -1,6 +1,6 @@
 from django.urls import path
 from manager.views import MyPage, AddLike2Comment, AddRate2Book, BookDetail, AddBook, AddComment, logout_user, \
-    UpdateComment, comment_delete, RegisterView
+    UpdateComment, comment_delete, RegisterView, PageGenre
 from manager.views import LoginView, book_delete, UpdateBook
 
 urlpatterns = [
@@ -18,5 +18,6 @@ urlpatterns = [
     path("update_comment/<int:id>/", UpdateComment.as_view(), name="update-comment"),
     path("delete_comment/<int:id>/", comment_delete, name="delete-comment"),
     path("register/", RegisterView.as_view(), name="register"),
+    path("page_genre/<str:genre>", PageGenre.as_view(), name="page-genre"),
     path("", MyPage.as_view(), name="the-main-page"),
 ]

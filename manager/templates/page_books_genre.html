@@ -1,40 +1,27 @@
 {% extends 'main_template.html' %}
 
-{% block main %}
-<a href="{% url 'login' %}">Login</a>
-<a href="{% url 'logout' %}">Logout</a>
-<a href="{% url 'register' %}">Register</a>
+{% block genre %}
+
 {{ user }}
+
 <div class="btn-group">
     <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
     Genre <span class="caret"></span></button>
     <ul class="dropdown-menu" role="menu">
-
         {% for genre in gen %}
             <li><a href="{% url 'page-genre' genre=genre %}">{{ genre }}</a></li>
         {% endfor %}
-
     </ul>
 </div>
+
     {% for b in books %}
         <a href="{% url 'book-detail' slug=b.slug %}"><h1>{{ b.title }}</h1></a>
         <h2>{{ b.date }}</h2>
         <h3>{{ b.text }}</h3>
-        <h4>{{ b.authors.all }}</h4>
-        <h4>{{ b.genre.all|join:", " }}</h4>
-        {{ b.rate }}
-        {% for i in range %}
-            {% if b.rate >= i %}
-                <a href="{% url 'add-rate' slug=b.slug rate=i %}">
-                    <span class="fa fa-star checked"></span>
-                </a>
-            {% else %}
-                <a href="{% url 'add-rate' slug=b.slug rate=i %}">
-                    <span class="fa fa-star"></span>
-                </a>
-            {% endif %}
-        {% endfor %}
-        <h5>{{ b.users_like.all }}</h5>
+        <h4>Authors: {{ b.authors.all }}</h4>
+        <h3>Genres: {{ b.genre.all|join:", " }}</h3>
+
+        <p></p>
         {% if b.is_owner %}
             <a href="{% url 'delete-book' slug=b.slug %}">
                 <i><input class="btn-danger" type="button" value="Delete Book"></i>
@@ -43,16 +30,6 @@
                 <i><input class="btn-light" type="button" value="Update Book"></i>
             </a>
         {% endif %}
-        <br>
     {% endfor %}
 
-{% if user.is_authenticated %}
-<form action="{% url 'add-book' %}" method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form }}
-    <input type="submit" value="OK">
-</form>
-{% endif %}
-
 {% endblock %}
-

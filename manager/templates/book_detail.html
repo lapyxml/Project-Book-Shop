@@ -5,6 +5,11 @@
 <a href="{% url 'the-main-page' %}"><h4>Return</h4></a>
 <h1>{{ book.title }}</h1>
 <h2>{{ book.date }}</h2>
+{% if book.book_image %}
+    <img src="{{ book.book_image.url }}" width="150" height="200">
+{% else %}
+    <p></p>
+{% endif %}
 <h3>{{ book.text }}</h3>
 <h4>{{ book.authors.all }}</h4>
 {{ book.rate }}

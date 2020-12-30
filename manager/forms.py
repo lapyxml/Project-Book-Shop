@@ -1,4 +1,4 @@
-from django.forms import ModelForm, TextInput, Textarea, CharField, PasswordInput
+from django.forms import ModelForm, TextInput, Textarea, CharField, PasswordInput, SelectMultiple
 from manager.models import Book, Comment
 from django.contrib.auth.forms import AuthenticationForm, UsernameField, UserCreationForm
 
@@ -32,10 +32,11 @@ class CustomUserCreationForm(UserCreationForm):
 class BookForm(ModelForm):
     class Meta:
         model = Book
-        fields = ["title", "text"]
+        fields = ["title", "text", "genre", "book_image"]
         widgets = {
             "title": TextInput(attrs={"class": "form-control"}),
-            "text": Textarea(attrs={"class": "form-control", "rows":5, "cols":50})
+            "text": Textarea(attrs={"class": "form-control", "rows":5, "cols":50}),
+            "genre": SelectMultiple(attrs={"class":"form-control"})
         }
         help_texts = {
             "title": "",
