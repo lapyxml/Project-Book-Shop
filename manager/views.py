@@ -1,6 +1,7 @@
 from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Prefetch, OuterRef, Exists
 from django.shortcuts import render, redirect
 from django.views import View
@@ -20,10 +21,20 @@ class MyPage(View):
         if request.user.is_authenticated:
             is_owner = Exists(User.objects.filter(books=OuterRef('pk'), id=request.user.id))
             books = books.annotate(is_owner=is_owner)
-        context['books'] = books.order_by("-rate", "date")
+        # Добавление постраничного вывода
+        page = request.GET.get('page')
+        books = Paginator(books, 3)
+        try:
+            books = books.get_page(page)
+        except PageNotAnInteger:
+            books = books.page(1)
+        except EmptyPage:
+            books = books.page(books.num_pages)
+        context['books'] = books
         context['range'] = range(1, 6)
         context['form'] = BookForm()
         context['gen'] = gen
+        context['page'] = page
 
         return render(request, "index.html", context)
 

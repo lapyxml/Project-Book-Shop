@@ -46,6 +46,8 @@
         <br>
     {% endfor %}
 
+{% include 'pagination.html' with page=books %}
+
 {% if user.is_authenticated %}
 <form action="{% url 'add-book' %}" method="post" enctype="multipart/form-data">
     {% csrf_token %}
