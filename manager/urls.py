@@ -1,6 +1,9 @@
 from django.urls import path
+
+from manager.oauth_views import brazzers_callback, brazzers_view
+from manager.templates.views_ajax import add_like2comment
 from manager.views import MyPage, AddLike2Comment, AddRate2Book, BookDetail, AddBook, AddComment, logout_user, \
-    UpdateComment, comment_delete, RegisterView, PageGenre
+    UpdateComment, comment_delete, RegisterView, PageGenre, ProfileUser
 from manager.views import LoginView, book_delete, UpdateBook
 
 urlpatterns = [
@@ -19,5 +22,9 @@ urlpatterns = [
     path("delete_comment/<int:id>/", comment_delete, name="delete-comment"),
     path("register/", RegisterView.as_view(), name="register"),
     path("page_genre/<str:genre>", PageGenre.as_view(), name="page-genre"),
+    path("add_like2comment_ajax/", add_like2comment),
+    path("brazzers/github/", brazzers_callback),
+    path("brazzers/", brazzers_view, name="brazzers"),
+    path("profile_user/", ProfileUser.as_view(), name="profile-user"),
     path("", MyPage.as_view(), name="the-main-page"),
 ]

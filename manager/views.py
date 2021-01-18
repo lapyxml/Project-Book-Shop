@@ -21,7 +21,6 @@ class MyPage(View):
         if request.user.is_authenticated:
             is_owner = Exists(User.objects.filter(books=OuterRef('pk'), id=request.user.id))
             books = books.annotate(is_owner=is_owner)
-        # Добавление постраничного вывода
         page = request.GET.get('page')
         books = Paginator(books, 3)
         try:
@@ -192,3 +191,10 @@ class PageGenre(View):
         context['form'] = BookForm
         context['gen'] = gen
         return render(request, "page_books_genre.html", context)
+
+
+class ProfileUser(View):
+    def get(self, request):
+        context = {}
+        return render(request, "brazzers.html", context)
+

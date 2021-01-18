@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'manager',
     'debug_toolbar',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -122,3 +123,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 INTERNAL_IPS = [
     '127.0.0.1',
 ]
+
+
+GIT_CLIENT_ID = "288b29946f4d613259f9"
+GIT_CLIENT_SECRET = "6ecdc84723ba51bb2510cd8e2ceb57d4a14ac016"

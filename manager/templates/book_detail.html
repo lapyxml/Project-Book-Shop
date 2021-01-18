@@ -2,6 +2,7 @@
 
 
 {% block detail %}
+{% load static %}
 <a href="{% url 'the-main-page' %}"><h4>Return</h4></a>
 <h1>{{ book.title }}</h1>
 <h2>{{ book.date }}</h2>
@@ -25,12 +26,12 @@
     {% endif %}
 {% endfor %}
 {% for comment in book.comments.all %}
+<div id="block-comment-{{ comment.id }}">
     <h4>{{ comment.text }}</h4>
     <h5>{{ comment.date }}</h5>
     <h6>{{ comment.author }}</h6>
-    <a href="{% url 'add-like-to-comment' id=comment.id slug=book.slug %}">
-        <h4>&#128151: {{ comment.likes }}</h4>
-    </a>
+    <h4 class="like-comment" id="comment-{{ comment.id }}">&#128151: {{ comment.likes }}</h4>
+
     {% if comment.is_owner %}
     <a href="{% url 'delete-comment' id=comment.id %}">
         <i><input class="btn-danger" type="button" value="Удалить комментарий"></i>
@@ -43,8 +44,9 @@
         <h6><font color="red">Вам понравился этот комментарий</font></h6>
     {% endif %}
     <h5>{{ comment.users_like.all }}</h5>
-
+</div>
 {% endfor %}
+<script src="{% static 'static.js' %}"></script>
 
 {% if user.is_authenticated %}
 <form action="{% url 'add-comment' slug=book.slug %}" method="post">
