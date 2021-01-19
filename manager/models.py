@@ -6,7 +6,7 @@ from slugify import slugify
 
 
 class Genre(models.Model):
-    text = models.TextField(db_index=True)
+    text = models.TextField()
 
 
     def __str__(self):
